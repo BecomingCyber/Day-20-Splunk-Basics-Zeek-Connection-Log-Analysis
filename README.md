@@ -103,12 +103,12 @@ Name your images:
 
 ## ✍️ Author
 
-**Your Name Here**  
+**Mozella McCoy-Flowers**  
 Cybersecurity Enthusiast | Blue Team | SIEM Explorer  
 📧 Email: becomingcyber@outlook.com 
 🌐 LinkedIn: [Your LinkedIn Profile](www.linkedin.com/in/mozella-mccoy-flowers)
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 ---
