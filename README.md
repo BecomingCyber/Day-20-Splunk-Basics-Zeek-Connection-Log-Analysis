@@ -105,7 +105,6 @@ Name your images:
 
 [![Author](https://img.shields.io/badge/Author-Mozella%20McCoy--Flowers-blueviolet?style=for-the-badge)](https://github.com/BecomingCyber)
 
-**Mozella McCoy-Flowers**
  
 Cybersecurity Enthusiast | Blue Team | SIEM Explorer  
 📧 Email: becomingcyber@outlook.com 
