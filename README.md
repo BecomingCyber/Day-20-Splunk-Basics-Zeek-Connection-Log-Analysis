@@ -1,41 +1,53 @@
-# Day#20: Splunk Basics – Zeek Connection Log Analysis
-
-![Splunk](https://img.shields.io/badge/Splunk-5AE4FF?style=for-the-badge&logo=splunk&logoColor=white)
-![SPL](https://img.shields.io/badge/SPL-FF4500?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZmZmIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjZmY0NTAwIi8+PC9zdmc+)
-![Cybersecurity](https://img.shields.io/badge/Cybersecurity-008000?style=for-the-badge&logo=securityscorecard&logoColor=white)
-![Awesome](https://img.shields.io/badge/Awesome-ff69b4?style=for-the-badge&logo=awesome&logoColor=white)
-[![Zeek](https://img.shields.io/badge/Zeek-Network%20Security-1C5480?style=for-the-badge&logo=zeek&logoColor=white)](https://zeek.org/)
-![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)
+# 📊 Day #20 — Splunk + Zeek Connection Log Analysis
 
 ## 🎯 Objective
-Analyze Zeek connection logs in Splunk to:
-- Find top clients and servers
-- Identify common services
-- Detect large traffic and long-duration connections
+
+Analyze Zeek connection logs using Splunk to identify network communication patterns and investigate connection behavior.
+
+The investigation focuses on:
+
+- Identifying the most active client IP addresses
+- Determining the most commonly observed network services
+- Investigating long-duration connections
+- Identifying the most frequently accessed destination servers
+
+This lab demonstrates how Zeek network telemetry can be analyzed within a SIEM to support SOC monitoring and network investigations.
 
 ---
 
-## 🖥️ Lab Setup
-- **Splunk:** Installed and accessible.
-- **Data Source:** JSON Zeek connection logs.
-- **Source Type:** `json` or `zeek:conn`
-- **Index:** `conn_lab`
+## 🖥️ Lab Environment
+
+| Component | Configuration |
+|---|---|
+| SIEM Platform | Splunk |
+| Network Monitoring Data | Zeek Connection Logs |
+| Data Format | JSON |
+| Sourcetype | `json` / `zeek:conn` |
+| Index | `conn_lab` |
+| Log Type | Zeek `conn.log` data |
 
 ---
 
-## ⚙️ Uploading Zeek Conn Logs to Splunk
+## ⚙️ Data Ingestion
 
-1. Splunk Web → **Settings > Add Data**.
-2. Select **Upload** → choose `zeek_conn_logs.json`.
-3. Set **Source Type**: `json` or create `zeek:conn`.
-4. Set **Index**: `conn_lab`.
-5. Upload and verify logs are searchable.
+Zeek connection logs were uploaded into Splunk and indexed for analysis.
+
+Configuration:
+
+```text
+Data Source: zeek_conn_logs.json
+Index: conn_lab
+Sourcetype: json / zeek:conn
+```
+
+After ingestion, the events were verified in Splunk Search & Reporting before beginning the investigation.
 
 ---
 
-## 🔍 Lab Tasks
+# 🔎 Investigation
 
-### ✅ Task 1: Top 10 Client IPs
+## Question 1 — Which client IP addresses generated the most connections?
+
 ```spl
 index=conn_lab sourcetype="json"
 | stats count by id.orig_h
@@ -43,21 +55,50 @@ index=conn_lab sourcetype="json"
 | head 10
 ```
 
-### ✅ Task 2:Most Common Services
+This query groups connection events by the Zeek `id.orig_h` field, representing the connection originator, and ranks the most active source systems.
+
+### Evidence
+
+![Top Client IPs](images/task1.png)
+
+---
+
+## Question 2 — Which services appeared most frequently?
+
 ```spl
 index=conn_lab sourcetype="json"
 | stats count by service
 | sort -count
 ```
 
-### ✅ Task 3: Connections > 1 Second
+This query summarizes connection events by service to identify the protocols or application services most frequently observed in the dataset.
+
+### Evidence
+
+![Most Common Services](images/task2.png)
+
+---
+
+## Question 3 — Which connections lasted longer than one second?
+
 ```spl
 index=conn_lab sourcetype="json" duration>1
 | table ts id.orig_h id.resp_h service duration
 | sort -duration
 ```
 
-### ✅ Task 4: Most Accessed Internal Servers
+This query isolates longer-duration connections and displays the source, destination, service, timestamp, and duration for further investigation.
+
+Long-duration connections are not inherently malicious, but they can provide useful leads when investigating unusual network behavior.
+
+### Evidence
+
+![Long Duration Connections](images/task3.png)
+
+---
+
+## Question 4 — Which destination servers received the most connections?
+
 ```spl
 index=conn_lab sourcetype="json"
 | stats count by id.resp_h
@@ -65,52 +106,90 @@ index=conn_lab sourcetype="json"
 | head 10
 ```
 
-📚 Skills Demonstrated
-- Splunk data ingestion
-- Basic SPL (Search Processing Language)
-- Zeek connection log analysis
-- Cybersecurity data analysis
-- Real-world threat hunting techniques
+The Zeek `id.resp_h` field represents the responding host. Ranking these systems helps identify frequently contacted servers and communication patterns within the dataset.
 
-## 4️⃣ Step 4: Capture and Save Screenshots
+### Evidence
 
-Now, **open Splunk**, perform each lab **Task**, and:
-
-1. **Run the query**.
-2. **Take a screenshot** (query + results visible).
-3. **Save each screenshot** inside the `images/` folder.
-   
-Name your images:
-- `task1.png`
-- `task2.png`
-- `task3.png`
-- `task4.png`
+![Most Accessed Servers](images/task4.png)
 
 ---
-  
-## 5️⃣ Step 5: Connect Screenshots to README
 
-![task1 Result](images/task1.png)
+# 🧠 Investigation Methodology
 
-![task2 Result](images/task2.png)
+The investigation followed a basic SOC network-analysis workflow:
 
-![task3 Result](images/task3.png)
+1. Ingest Zeek connection telemetry into Splunk.
+2. Validate that events were searchable.
+3. Establish baseline communication patterns.
+4. Identify high-volume source systems.
+5. Analyze commonly observed services.
+6. Review long-duration connections.
+7. Identify frequently contacted destination systems.
+8. Preserve query results as investigation evidence.
 
-![task4 Result](images/task4.png)
+---
 
+# 🧾 Evidence & Artifacts
+
+| Artifact | Purpose |
+|---|---|
+| `images/task1.png` | Evidence of most active client IPs |
+| `images/task2.png` | Evidence of most common services |
+| `images/task3.png` | Evidence of long-duration connections |
+| `images/task4.png` | Evidence of most accessed servers |
+| `README.md` | Investigation methodology and documentation |
+
+---
+
+# 🛠️ Skills Demonstrated
+
+- Splunk data ingestion
+- Search Processing Language (SPL)
+- Zeek connection-log analysis
+- Network traffic analysis
+- Source and destination IP analysis
+- Service identification
+- Connection-duration analysis
+- SIEM-based investigation
+- Evidence documentation
+- SOC investigation methodology
+
+---
+
+# 🛡️ Security Analysis
+
+Zeek connection logs provide network-level visibility into communication between systems. Fields such as `id.orig_h`, `id.resp_h`, `service`, and `duration` can be used to establish normal communication patterns and identify activity requiring additional investigation.
+
+High connection counts, unusual services, unexpected destinations, and abnormally long connections can serve as investigative leads. These observations should be correlated with additional telemetry before classifying activity as malicious.
+
+---
+
+# 🚀 Planned Engineering Enhancements
+
+This project will be expanded with:
+
+- Structured investigation findings
+- Documented SPL queries
+- Automated evidence validation
+- Python unit testing
+- GitHub Actions CI validation
+- Security analysis based on observed evidence
 
 ---
 
 ## ✍️ Author
 
-[![Author](https://img.shields.io/badge/Author-Mozella%20McCoy--Flowers-blueviolet?style=for-the-badge)](https://github.com/BecomingCyber)
+[![Author](https://img.shields.io/badge/Author-Becoming%20Cyber-blueviolet?style=for-the-badge)](https://github.com/BecomingCyber)
 
- 
-Cybersecurity Enthusiast | Blue Team | SIEM Explorer  
+Cybersecurity | Digital Forensics | SOC Operations
+
 📧 Email: becomingcyber@outlook.com 
-🌐 LinkedIn: [Your LinkedIn Profile](www.linkedin.com/in/mozella-mccoy-flowers)
+
+🌐 LinkedIn: [Mozella McCoy-Flowers](www.linkedin.com/in/mozella-mccoy-flowers)
+
+
+---
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
----
+This project is licensed under the MIT License. See the `LICENSE` file for details.
